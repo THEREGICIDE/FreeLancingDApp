@@ -1,0 +1,65 @@
+// freelancing_platform.rs
+
+use solana_program::{
+    account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, msg, pubkey::Pubkey,
+    program_error::ProgramError, program_pack::Pack, system_instruction,
+};
+
+// Define your data structure for tasks
+struct Task {
+    client: Pubkey,
+    freelancer: Pubkey,
+    description: String,
+    bid_amount: u64,
+    completed: bool,
+}
+
+// Define program state
+struct FreelancingProgram;
+
+impl FreelancingProgram {
+    fn create_task(
+        accounts: &[AccountInfo],
+        description: String,
+        bid_amount: u64,
+    ) -> ProgramResult {
+        // Check account ownership and other conditions
+
+        // Deserialize accounts
+        let mut task_account = Task::unpack_unchecked(&accounts[1].data.borrow())?;
+
+        // Initialize task details
+        task_account.client = *accounts[0].key;
+        task_account.description = description;
+        task_account.bid_amount = bid_amount;
+
+        // Save updated task details
+        Task::pack(task_account, &mut accounts[1].data.borrow_mut())?;
+
+        Ok(())
+    }
+
+    // Implement other functions like bid_for_task, complete_task, etc.
+}
+
+// Entrypoint function
+#[entrypoint]
+fn process_freelancing_program(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    instruction_data: &[u8],
+) -> ProgramResult {
+    if let Ok(instruction) = borsh::BorshDeserialize::try_from_slice(instruction_data) {
+        match instruction {
+            // Define different instructions for task creation, bidding, completion, etc.
+            // e.g., Instruction::CreateTask(description, bid_amount) => FreelancingProgram::create_task(accounts, description, bid_amount),
+            // Implement other instructions based on your platform's functionalities
+            _ => return Err(ProgramError::InvalidInstructionData),
+        }
+    } else {
+        return Err(ProgramError::InvalidInstructionData);
+    }
+}
+
+// Program entrypoint
+solana_program::entrypoint!(process_freelancing_program);
